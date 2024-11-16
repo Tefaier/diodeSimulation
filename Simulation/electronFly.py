@@ -13,11 +13,12 @@ functionToCheck = [
     lambda t: 0.2,
 ]
 a_k_offset = 0.01
-initialOffset = a_k_offset / 100000
+initialOffset = a_k_offset / 1000
+area = 1e-4
 
 def getData(voltFunction, timeLimit):
     def model(p, t):
-        dp = -1 * k * electron_charge * voltFunction(t) / (electron_mass * (a_k_offset - (p[0] ** 2) * 0.5))
+        dp = -2 * electron_charge * voltFunction(t) * area / (electron_mass * 4 * math.pi * a_k_offset * ((a_k_offset - (p[0] ** 2) * 0.5) ** 2))
         return dp
 
     timeDots = np.linspace(0, timeLimit, 5000)
@@ -30,7 +31,7 @@ def getData(voltFunction, timeLimit):
     return (timeDots[:cutOffIndex], solution)
 
 def simple():
-    timeLimit = 7e-25
+    timeLimit = 2e-14
     fig = plt.figure(1, (9, 6))
     axes = plt.axes()
     axes.set_ylim([0, a_k_offset])
@@ -41,11 +42,11 @@ def simple():
     plt.show()
 
 def simpleVoltage():
-    timeLimit = 7e-24
+    timeLimit = 3e-14
     fig = plt.figure(1, (9, 6))
     axes = plt.axes()
-    axes.set_ylim([0, a_k_offset])
-    axes.set_xlim([0, timeLimit])
+    axes.set_ylim([0, a_k_offset * 1e3])
+    axes.set_xlim([0, timeLimit * 1e9])
     for val in np.linspace(0.2, 5, 50):
         voltFunction = lambda t: val
         time, pos = getData(voltFunction, timeLimit)
@@ -61,19 +62,19 @@ def simpleVoltage():
     plt.show()
 
 def oscillation():
-    timeLimit = 4e-24
+    timeLimit = 1e-13
     fig = plt.figure(1, (9, 6))
     axes = plt.axes()
     axes.set_ylim([0, a_k_offset * 1e3])
     axes.set_xlim([0, timeLimit * 1e9])
     for val in np.linspace(0.1, 3, 20):
-        voltFunction = lambda t: 2 * math.sin(t * (1 / 2.966655551850617e-25) * val)
+        voltFunction = lambda t: 2 * math.sin(t * (1 / 1.2668533706741348e-14) * val)
         time, pos = getData(voltFunction, timeLimit)
         time = [t * 1e9 for t in time]
         pos = [p * 1e3 for p in pos]
         plt.plot(time, pos, color=colors.hsv_to_rgb([(val - 0.1) / 5, 1, 1]))
 
-    # fly time 2.966655551850617e-25
+    # fly time 1.2668533706741348e-14
     voltFunction = lambda t: 2
     time, pos = getData(voltFunction, timeLimit)
     time = [t * 1e9 for t in time]
