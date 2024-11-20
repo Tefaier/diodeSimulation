@@ -10,7 +10,6 @@ BOLTZMANN_CONSTANT = 1.38064852e-23
 class FlatDiode:
     def __init__(self, square: float | None = None, distance: float | None = None,
                  perveance: float | None = None,
-                 locking_voltage: float | None = None,
                  # work_function = Работа выхода материала катода
                  work_function: float | None = None,
                  # в кельвинах
@@ -23,7 +22,6 @@ class FlatDiode:
         else:
             self.perveance = 2.33 * (10 ** -6) * square / distance ** 2
         self.square = square
-        self.locking_voltage = locking_voltage
         self.work_function = work_function
         self.temperature = temperature
         self.saturated_amperage = square * UNIVERSAL_ZOMMERFELD_CONSTANT * temperature ** 2 * exp(
@@ -31,9 +29,9 @@ class FlatDiode:
         )
 
     def GetAmperage(self, voltage: float):
+        if voltage <= 0:
+            return 0
         amperage_using_3_2_law = self.perveance * sqrt(voltage ** 3)
-        if amperage_using_3_2_law < self.locking_voltage:
-            return self.locking_voltage
         if amperage_using_3_2_law > self.saturated_amperage:
             return self.saturated_amperage
         return amperage_using_3_2_law
