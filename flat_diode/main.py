@@ -15,7 +15,7 @@ class FlatDiode:
                  # в кельвинах
                  temperature: float | None = None):
         assert distance or perveance
-        assert square and locking_voltage and work_function
+        assert square and work_function
         assert temperature > 0  # проверка на кельвины
         if perveance is not None:
             self.perveance = perveance
