@@ -2,6 +2,8 @@ import math
 from typing import List, Tuple
 
 import numpy as np
+import matplotlib.pyplot as plt
+import scipy
 
 ELECTRON_MASS = 9.109383719e-31
 ELECTRON_CHARGE = -1.602176634e-19
@@ -22,7 +24,9 @@ class FlatDiode1DModel:
             height: float,
             delta_time: float,
             amount_of_cells_between_cathode_and_anode: int,
-            charge_increase_rate: float # should be negative -> charge per second
+            charge_increase_rate: float, # should be negative -> charge per second
+            electron_leave_speed: float,
+            appearance_part: float
     ):
         self.dt = delta_time
         self.n = amount_of_cells_between_cathode_and_anode
@@ -33,6 +37,8 @@ class FlatDiode1DModel:
         self.electric_field = np.zeros(self.n)
         self.velocities = np.zeros(self.n)
         self.increase_rate = charge_increase_rate
+        self.start_speed = electron_leave_speed
+        self.appearance_part = appearance_part
         self.set_voltage(voltage)
 
     # nets with first value being radius and second value being its charge
@@ -45,7 +51,12 @@ class FlatDiode1DModel:
         self.q_cathode = (-1 * (voltage + self.zero_potential) / (2 * COULOMB_CONSTANT) /
                           math.log(self.r2 / self.r1))
 
+    def create_charge_by_poisson(self):
+        n_max = max(1, int(self.n * self.appearance_part)) * 2
+        return scipy.stats.poisson.pmf(np.arange(0, n_max), mu=n_max, loc=-n_max) * 2 * (self.increase_rate * self.dt)
+
     def calculate_pref_sum(self):
+        scipy.stats.poisson.pmf(1, mu=10)
         # pref sum is n+1 size with 0 showing cathode!
         pref_sum = np.zeros(self.n + 1)
         pref_sum[0] = self.q_cathode
@@ -60,11 +71,16 @@ class FlatDiode1DModel:
     def iterate(self) -> float:
         electric_field = np.zeros(self.n)
         dr = (self.r2 - self.r1) / self.n  # delta r per cell
-
-        self.big_charges[0] += self.increase_rate * self.dt
-        if self.big_charges[0] < MAX_CHARGE_AT_CATHODE:  # because negative charge
-            self.big_charges[0] = MAX_CHARGE_AT_CATHODE
-        # self.velocities[0] = start_velocity = dr / self.dt
+        start_velocity = max(self.start_speed, dr / self.dt)
+        charges = self.create_charge_by_poisson()
+        for i in range(0, len(charges)):
+            new_q, new_v = self.compose([(self.big_charges[i], self.velocities[i]), (charges[i], start_velocity)])
+            self.big_charges[i] = new_q
+            self.velocities[i] = new_v
+        # self.big_charges[0] += self.increase_rate * self.dt
+        # if self.big_charges[0] < MAX_CHARGE_AT_CATHODE:  # because negative charge
+        #     self.big_charges[0] = MAX_CHARGE_AT_CATHODE
+        # self.velocities[0] = max(self.start_speed, dr / self.dt)
         pref_sum = self.calculate_pref_sum()
         new_cords = {}
         for i in range(0, self.n):
@@ -111,6 +127,14 @@ class FlatDiode1DModel:
         return new_q, sum_imp / new_q
 
 
-diode = FlatDiode1DModel(2e-2,1e-3, 3e-3, 100e-3, 1e-9, 10**4, ELECTRON_CHARGE * 1e6)
+delta_time = 1e-9
+diode = FlatDiode1DModel(0,1e-3, 3e-3, 100e-3, delta_time, 10**3, ELECTRON_CHARGE * 1e15, 10000, 0.01)
+x = []
+y = []
 for i in range(200):
-    print(diode.iterate())
+    x.append(i * delta_time)
+    y.append(diode.iterate())
+window_size = 40
+y2 = np.convolve(y, np.ones((window_size,)) / window_size, 'same')
+plt.plot(x, y2)
+plt.show()
