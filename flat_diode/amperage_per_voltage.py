@@ -3,12 +3,12 @@ import numpy as np
 
 from flat_diode.model import FlatDiode1DModel, ELECTRON_CHARGE
 
-delta_time = 1e-9
-make_iterations = 300
-calculate_mean_by = 50
+delta_time = 2e-10
+make_iterations = 1500
+calculate_mean_by = 300
 x = []
 y = []
-for v in np.linspace(-5, 5, 40):
+for v in np.linspace(-2, 5, 20):
     print(f"{v} is in progress")
     diode = FlatDiode1DModel(v, 1e-3, 3e-3, 100e-3, delta_time, 10 ** 3, ELECTRON_CHARGE * 1e18, 10000, 0.01)
     sum_of_amperages = 0
