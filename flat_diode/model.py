@@ -131,10 +131,10 @@ delta_time = 1e-9
 diode = FlatDiode1DModel(0,1e-3, 3e-3, 100e-3, delta_time, 10**3, ELECTRON_CHARGE * 1e15, 10000, 0.01)
 x = []
 y = []
-for i in range(200):
+for i in range(300):
     x.append(i * delta_time)
-    y.append(diode.iterate())
-window_size = 40
+    y.append(abs(diode.iterate()))
+window_size = 50
 y2 = np.convolve(y, np.ones((window_size,)) / window_size, 'same')
-plt.plot(x, y2)
+plt.plot(x[:int(window_size/-2)], y2[:int(window_size/-2)])
 plt.show()
