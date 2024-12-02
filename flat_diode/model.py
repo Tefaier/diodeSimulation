@@ -28,6 +28,7 @@ class FlatDiode1DModel:
             electron_leave_speed: float,
             appearance_part: float
     ):
+        self.charges_setup = None
         self.dt = delta_time
         self.n = amount_of_cells_between_cathode_and_anode
         self.r1 = cathode_radius
@@ -52,11 +53,12 @@ class FlatDiode1DModel:
                           math.log(self.r2 / self.r1))
 
     def create_charge_by_poisson(self):
-        n_max = max(1, int(self.n * self.appearance_part)) * 2
-        return scipy.stats.poisson.pmf(np.arange(0, n_max), mu=n_max, loc=-n_max) * 2 * (self.increase_rate * self.dt)
+        if self.charges_setup is None:
+            n_max = max(1, int(self.n * self.appearance_part)) * 2
+            self.charges_setup = scipy.stats.poisson.pmf(np.arange(0, n_max), mu=n_max, loc=-n_max) * 2 * (self.increase_rate * self.dt)
+        return self.charges_setup
 
     def calculate_pref_sum(self):
-        scipy.stats.poisson.pmf(1, mu=10)
         # pref sum is n+1 size with 0 showing cathode!
         pref_sum = np.zeros(self.n + 1)
         pref_sum[0] = self.q_cathode
