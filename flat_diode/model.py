@@ -48,7 +48,7 @@ class FlatDiode1DModel:
         self.nets = sorted(withSlots, key=lambda net: net[0])
 
     def set_voltage(self, voltage: float):
-        self.q_cathode = (-1 * (voltage + self.zero_potential) / (2 * COULOMB_CONSTANT) /
+        self.q_cathode = (-1 * voltage / (2 * COULOMB_CONSTANT) /
                           math.log(self.r2 / self.r1))
 
     def create_charge_by_poisson(self):
