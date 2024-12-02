@@ -13,7 +13,6 @@ MAX_CHARGE_AT_CATHODE = -1e-10  # think about value
 
 
 class FlatDiode1DModel:
-    zero_potential: float = 0  # todo
     nets: List[Tuple[int, float]] = []
 
     def __init__(
@@ -77,7 +76,7 @@ class FlatDiode1DModel:
         charges = self.create_charge_by_poisson()
         for i in range(0, len(charges)):
             new_q, new_v = self.compose([(self.big_charges[i], self.velocities[i]), (charges[i], start_velocity)])
-            self.big_charges[i] = new_q
+            self.big_charges[i] = max(new_q, MAX_CHARGE_AT_CATHODE)
             self.velocities[i] = new_v
         # self.big_charges[0] += self.increase_rate * self.dt
         # if self.big_charges[0] < MAX_CHARGE_AT_CATHODE:  # because negative charge
