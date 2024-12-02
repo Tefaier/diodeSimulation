@@ -128,13 +128,16 @@ class FlatDiode1DModel:
 
 
 delta_time = 1e-9
-diode = FlatDiode1DModel(0,1e-3, 3e-3, 100e-3, delta_time, 10**3, ELECTRON_CHARGE * 1e15, 10000, 0.01)
-x = []
-y = []
-for i in range(300):
-    x.append(i * delta_time)
-    y.append(abs(diode.iterate()))
-window_size = 50
-y2 = np.convolve(y, np.ones((window_size,)) / window_size, 'same')
-plt.plot(x[:int(window_size/-2)], y2[:int(window_size/-2)])
-plt.show()
+estimate_mean_amperage = lambda data, samples: sum(data[-samples:]) / samples
+diode = FlatDiode1DModel(1,1e-3, 3e-3, 100e-3, delta_time, 10**3, ELECTRON_CHARGE * 1e18, 10000, 0.01)
+
+if __name__ == '__main__':
+    x = []
+    y = []
+    for i in range(200):
+        x.append(i * delta_time)
+        y.append(abs(diode.iterate()))
+    window_size = 50
+    y2 = np.convolve(y, np.ones((window_size,)) / window_size, 'same')
+    plt.plot(x[:int(window_size / -2)], y2[:int(window_size / -2)])
+    plt.show()
